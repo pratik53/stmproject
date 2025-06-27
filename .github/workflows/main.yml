@@ -1,1 +1,23 @@
+name : Simple EC2 Deploy
 
+on:
+    push:
+        branches:
+            - main
+
+jobs:
+    deploy:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Deploy to EC2 via SSH
+              uses: appleboy/ssh-action@v1.0.0
+              with:
+                host: ${{ secrets.EC2_HOST }}
+                username: ${{ secrets.EC2_USER }}
+                key: ${{ secrets.EC2_SSH_KEY }}
+                script: |
+                    cd ~/stmproject
+                    git pull origin main
+                    pkill streamlit || true
+                    nohup steamlit run app.py --server.port 8501 --server.headless true
