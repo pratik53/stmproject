@@ -2,5 +2,5 @@ import streamlit as st
 
 st.write("""
 # My first app
-by Pratik shegoankar
+by Wa bhai wa
 """)
