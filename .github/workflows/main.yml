@@ -18,6 +18,13 @@ jobs:
                 key: ${{ secrets.EC2_SSH_KEY }}
                 script: |
                     cd ~/stmproject
+
+                    
+                    sudo yum update -y
+                    sudo yum install python3-pip -y
+                    pip3 install --upgrade pip
+                    pip3 install streamlit
+
                     git pull origin main
                     pkill streamlit || true
                     nohup steamlit run app.py --server.port 8501 --server.headless true
