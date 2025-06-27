@@ -1,30 +1,44 @@
-name : Simple EC2 Deploy
+name: Simple EC2 Deploy
 
 on:
-    push:
-        branches:
-            - main
+  push:
+    branches:
+      - main
 
 jobs:
-    deploy:
-        runs-on: ubuntu-latest
+  deploy:
+    runs-on: ubuntu-latest
 
-        steps:
-            - name: Deploy to EC2 via SSH
-              uses: appleboy/ssh-action@v1.0.0
-              with:
-                host: ${{ secrets.EC2_HOST }}
-                username: ${{ secrets.EC2_USER }}
-                key: ${{ secrets.EC2_SSH_KEY }}
-                script: |
-                    cd ~/stmproject
+    steps:
+      - name: Deploy to EC2 via SSH
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            # Install Python and pip
+            sudo yum update -y
+            sudo yum install -y python3 python3-pip git
 
-                    
-                    sudo yum update -y
-                    sudo yum install python3-pip -y
-                    pip3 install --upgrade pip
-                    pip3 install streamlit
+            # Upgrade pip
+            pip3 install --upgrade pip
 
-                    git pull origin main
-                    pkill streamlit || true
-                    nohup streamlit run app.py --server.port 8501 --server.headless true
+            # Clone the repo if not already cloned
+            if [ ! -d "stmproject" ]; then
+              git clone https://github.com/pratik53/LLM.git stmproject
+            fi
+
+            cd stmproject
+
+            # Pull latest changes
+            git pull origin main
+
+            # Install Streamlit and any other packages
+            pip3 install -r requirements.txt || pip3 install streamlit
+
+            # Kill any existing Streamlit app
+            pkill streamlit || true
+
+            # Start Streamlit in background on port 8501
+            nohup streamlit run app.py --server.port 8501 --server.headless true > streamlit.log 2>&1 &
